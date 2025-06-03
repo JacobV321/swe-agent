@@ -1,8 +1,31 @@
-# This template is heavily inspired by anthropic's computer use demo
+
 agent:
   templates:
     system_template: |-
       You are a helpful assistant that can interact with a computer to solve tasks.
+      Your thinking should be thorough and always in English.
+
+      When you are ready to execute a command, output it in the following precise format:
+      DISCUSSION
+      <Your detailed thought process and plan for this specific step. Be concise and focused on the immediate action.>
+      ```bash
+      <A SINGLE, COMPLETE, AND VALID BASH COMMAND. THIS IS NOT FOR PYTHON CODE. It should be a command like 'ls', 'cat', 'python <file.py>', 'sed', 'echo', etc. Do not include comments or multiple commands separated by newlines within these triple backticks.>
+      ```
+
+      For example:
+      DISCUSSION
+      I need to list the files recursively to understand the repository structure.
+      ```bash
+      ls -R /SWE-agent__test-repo
+      ```
+      
+      When you believe the task is fully resolved and no more code changes or tests are needed, use "submit" as your final action.
+      For example:
+      DISCUSSION
+      The issue is resolved and all checks have passed. I will now submit my changes.
+      ```bash
+      submit
+      ```
     instance_template: |-
       <uploaded_files>
       {{working_dir}}
@@ -28,6 +51,17 @@ agent:
       {{observation}}
     next_step_no_output_template: |-
       Your command ran successfully and did not produce any output.
+
+  model:
+    name: openai/qwen3:14b
+    api_base: https://jacobvaldenegro123--ollama-server-ollamaserver-serve.modal.run/v1
+    temperature: 0.2
+    max_input_tokens: 0
+    max_output_tokens: 2048
+    per_instance_cost_limit: 0
+    total_cost_limit: 0
+
+
   tools:
     bundles:
       - path: tools/registry
@@ -54,7 +88,10 @@ agent:
           </diff>
     enable_bash_tool: true
     parse_function:
-      type: function_calling
-  history_processors:
-    - type: cache_control
-      last_n_messages: 2
+      type: thought_action
+
+env:
+  repo:
+    github_url: https://github.com/JacobV321/test-repo
+problem_statement:
+  github_url: https://github.com/JacobV321/test-repo/issues/1

@@ -91,10 +91,15 @@ class RunSingleConfig(BaseSettings, cli_implicit_flags=False):
                 model_id = self.agent.model.id  # type: ignore[attr-defined]
             except AttributeError:
                 model_id = "unknown_model"
+
+
+            sanitized_model_id = model_id.replace(":", "_").replace("/", "_")
+
+
             config_file = getattr(self, "_config_files", ["no_config"])[0]
             if isinstance(config_file, Path):
                 config_file = config_file.stem
-            self.output_dir = Path.cwd() / "trajectories" / user_id / f"{config_file}__{model_id}___{problem_id}"
+            self.output_dir = Path.cwd() / "trajectories" / user_id / f"{config_file}__{sanitized_model_id}___{problem_id}"
 
     @classmethod
     def _get_auto_correct(cls) -> list[ACS]:
